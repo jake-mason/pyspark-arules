@@ -1,18 +1,3 @@
-'''
-spark-submit \
-	--master yarn \
-	--deploy-mode client \
-	--conf spark.pyspark.driver.python=/hadoop/opt/python_anaconda/3-5.1.0/bin/python \
-	--conf spark.pyspark.python=/hadoop/opt/python_anaconda/3-5.1.0/bin/python \
-	--conf spark.executorEnv.PYTHONHASHSEED=321 \
-	--num-executors 2 \
-	--executor-memory 1G \
-	--executor-cores 2 \
-	--driver-memory 1G \
-	--py-files arules.py \
-	test.py
-'''
-
 import unittest
 
 from pyspark.sql import SparkSession, functions as func
@@ -49,7 +34,7 @@ class TestAssociationRules(unittest.TestCase):
 
 	def tearDown(self):
 		pass
-	
+
 	def rule_metric_grabber(self, rule_col, rule_df, antecedent, consequent):
 		mask = (rule_df['antecedent_str'] == antecedent) & (rule_df['consequent_str'] == consequent)
 		return rule_df.where(mask).select(rule_col).take(1)[0].asDict()[rule_col]

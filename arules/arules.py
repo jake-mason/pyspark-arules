@@ -86,20 +86,29 @@ class AssociationRules:
 
 	def support(self):
 		''' Support: |A & B| / n '''
-		support = self.itemsets_df['freq'] / self.n
+		support = (
+			self.itemsets_df['freq'] /
+			self.n
+		)
 		df = self.itemsets_df.withColumn('support', support)
 		return df
 
 	def confidence(self):
 		''' Confidence: |A & B| / |A| '''
-		confidence = self.itemsets_df['freq'] / self.itemsets_df['antecedent_freq']
+		confidence = (
+			self.itemsets_df['freq'] /
+			self.itemsets_df['antecedent_freq']
+		)
 		df = self.itemsets_df.withColumn('confidence', confidence)
 		df = self._handle_single_itemset_metric('confidence', df)
 		return df
 
 	def lift(self):
 		''' Lift: (|A & B| / |A|) / (|B| / n) '''
-		lift = (self.itemsets_df['freq'] / self.itemsets_df['antecedent_freq']) / (self.itemsets_df['consequent_freq'] / self.n)
+		lift = (
+			(self.itemsets_df['freq'] / self.itemsets_df['antecedent_freq']) /
+			(self.itemsets_df['consequent_freq'] / self.n)
+		)
 		df = self.itemsets_df.withColumn('lift', lift)
 		df = self._handle_single_itemset_metric('lift', df)
 		return df
@@ -109,7 +118,10 @@ class AssociationRules:
 		Conviction
 		(1 - (|B| / n)) / (1 - (|A & B| / |A|)) = (1 - SUP(B)) / (1 - CONF(A, B))
 		'''
-		conviction = (1 - (self.itemsets_df['consequent_freq'] / self.n)) / (1 - (self.itemsets_df['freq'] / self.itemsets_df['antecedent_freq']))
+		conviction = (
+			(1 - (self.itemsets_df['consequent_freq'] / self.n)) /
+			(1 - (self.itemsets_df['freq'] / self.itemsets_df['antecedent_freq']))
+		)
 		df = self.itemsets_df.withColumn('conviction', conviction)
 		df = self._handle_single_itemset_metric('conviction', df)
 		return df
