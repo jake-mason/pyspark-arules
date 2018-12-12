@@ -64,24 +64,21 @@ class AssociationRules:
 
 		lookup_df = self.itemsets_df.selectExpr('items AS items_key', 'freq AS items_freq').distinct()
 
-		self.itemsets_df = (
-			self.itemsets_df
-			.join(lookup_df, self.itemsets_df['antecedent'] == lookup_df['items_key'], 'left')
-			.drop('items_key')
-			.withColumnRenamed('items_freq', 'antecedent_freq')
-		)
-
-		self.itemsets_df = (
-			self.itemsets_df
-			.join(lookup_df, self.itemsets_df['consequent'] == lookup_df['items_key'], 'left')
-			.drop('items_key')
-			.withColumnRenamed('items_freq', 'consequent_freq')
-		)
+		for prefix in ('antecedent', 'consequent'):
+			self.itemsets_df = (
+				self.itemsets_df
+				.join(lookup_df, self.itemsets_df[prefix] == lookup_df['items_key'], 'left')
+				.drop('items_key')
+				.withColumnRenamed('items_freq', '{}_freq'.format(prefix))
+			)
 
 		self.itemsets_df = self.itemsets_df.where(func.col('rule_len') <= self.max_length)
 
 	def _handle_single_itemset_metric(self, metric, df):
-		''' Should not calculate multi-item metrics like confidence, lift, conviction, etc. for one-item sets '''
+		'''
+		Should not calculate multi-item metrics like
+		confidence, lift, conviction, etc. for one-item sets
+		'''
 		return df.withColumn(metric, func.when(df['rule_len'] < 2, None).otherwise(df[metric]))
 
 	def support(self):
@@ -127,7 +124,7 @@ class AssociationRules:
 		return df
 
 	def calculate_all(self):
-		''' Calculate all currently-defined association rules '''
+		''' Calculate all currently defined association rules '''
 		for metric_calculator in [self.support, self.confidence, self.lift, self.conviction]:
 			self.itemsets_df = metric_calculator()
 		return self.itemsets_df
